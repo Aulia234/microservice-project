@@ -1,4 +1,5 @@
-let token = "";
+// ================= CONFIG =================
+const BACKEND_URL = "https://<backend-public-url>"; // Ganti dengan URL backend Clever Cloud
 
 // ================= REGISTER =================
 async function register() {
@@ -6,16 +7,26 @@ async function register() {
   const email = document.getElementById("regEmail").value;
   const password = document.getElementById("regPassword").value;
 
-  const res = await fetch("http://localhost:5000/api/auth/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ nama, email, password })
-  });
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, email, password })
+    });
 
-  const data = await res.json();
-  document.getElementById("regResult").innerText = JSON.stringify(data);
+    const data = await res.json();
+    document.getElementById("regResult").innerText = data.message || JSON.stringify(data);
 
-  if (data.token) token = data.token; // ambil token jika register langsung kasih token
+    if (res.ok) {
+      alert("Register berhasil! Silakan login.");
+      document.getElementById("regNama").value = "";
+      document.getElementById("regEmail").value = "";
+      document.getElementById("regPassword").value = "";
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Gagal register, cek console.");
+  }
 }
 
 // ================= LOGIN =================
@@ -23,38 +34,47 @@ async function login() {
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
 
-  const res = await fetch("http://localhost:5000/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password })
-  });
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-  const data = await res.json();
-  document.getElementById("loginResult").innerText = JSON.stringify(data);
+    const data = await res.json();
+    document.getElementById("loginResult").innerText = data.message || JSON.stringify(data);
 
-  if (data.token) {
-    token = data.token;
-    alert("Login berhasil! Token tersimpan, sekarang bisa CRUD pasien.");
-    window.location.href = "pasien.html";
+    if (res.ok) {
+      alert("Login berhasil! Sekarang bisa CRUD pasien.");
+      window.location.href = "pasien.html";
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Gagal login, cek console.");
   }
 }
 
 // ================= CRUD PASIEN =================
 async function fetchPatients() {
-  const res = await fetch("http://localhost:5000/api/patients", {
-    headers: { Authorization: "Bearer " + token }
-  });
-  const patients = await res.json();
-  const list = document.getElementById("patientList");
-  list.innerHTML = "";
-  patients.forEach(p => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      ${p.nama_pasien} - ${p.nik} - ${p.tanggal_lahir} - ${p.jenis_kelamin} - ${p.alamat} - ${p.no_hp}
-      <button onclick="deletePatient(${p.id})">Hapus</button>
-    `;
-    list.appendChild(li);
-  });
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/patients`);
+    const patients = await res.json();
+
+    const list = document.getElementById("patientList");
+    list.innerHTML = "";
+
+    patients.forEach(p => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        <b>${p.nama_pasien}</b> | NIK: ${p.nik} | Lahir: ${p.tanggal_lahir} | JK: ${p.jenis_kelamin} | Alamat: ${p.alamat} | HP: ${p.no_hp}
+        <button onclick="deletePatient(${p.id})" style="margin-left:10px;">Hapus</button>
+      `;
+      list.appendChild(li);
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Gagal fetch pasien, cek console.");
+  }
 }
 
 async function addPatient() {
@@ -65,27 +85,40 @@ async function addPatient() {
   const alamat = document.getElementById("alamat").value;
   const no_hp = document.getElementById("no_hp").value;
 
-  await fetch("http://localhost:5000/api/patients", {
-    method: "POST",
-    headers: { 
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + token
-    },
-    body: JSON.stringify({ nama_pasien, nik, tanggal_lahir, jenis_kelamin, alamat, no_hp })
-  });
+  try {
+    await fetch(`${BACKEND_URL}/api/patients`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama_pasien, nik, tanggal_lahir, jenis_kelamin, alamat, no_hp })
+    });
 
-  fetchPatients(); // refresh list
+    fetchPatients(); // refresh list
+
+    // Clear form
+    document.getElementById("nama_pasien").value = "";
+    document.getElementById("nik").value = "";
+    document.getElementById("tanggal_lahir").value = "";
+    document.getElementById("jenis_kelamin").value = "";
+    document.getElementById("alamat").value = "";
+    document.getElementById("no_hp").value = "";
+
+  } catch (err) {
+    console.error(err);
+    alert("Gagal tambah pasien, cek console.");
+  }
 }
 
 async function deletePatient(id) {
-  await fetch(`http://localhost:5000/api/patients/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: "Bearer " + token }
-  });
-  fetchPatients();
+  try {
+    await fetch(`${BACKEND_URL}/api/patients/${id}`, {
+      method: "DELETE"
+    });
+
+    fetchPatients(); // refresh list
+  } catch (err) {
+    console.error(err);
+    alert("Gagal hapus pasien, cek console.");
+  }
 }
 
-// Load pasien saat halaman pasien.html dibuka
-if (window.location.pathname.endsWith("pasien.html")) {
-  fetchPatients();
-}
+// ================= AUTO LOAD ==============
