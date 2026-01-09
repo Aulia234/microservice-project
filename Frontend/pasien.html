@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD Pasien</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen p-4">
+
+  <div class="max-w-4xl mx-auto bg-white p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4">Data Pasien</h1>
+
+    <!-- FORM TAMBAH PASIEN -->
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+      <input type="text" id="nama_pasien" placeholder="Nama Pasien" class="p-2 border rounded">
+      <input type="text" id="nik" placeholder="NIK" class="p-2 border rounded">
+      <input type="date" id="tanggal_lahir" class="p-2 border rounded">
+      <input type="text" id="jenis_kelamin" placeholder="Jenis Kelamin" class="p-2 border rounded">
+      <input type="text" id="alamat" placeholder="Alamat" class="p-2 border rounded">
+      <input type="text" id="no_hp" placeholder="No HP" class="p-2 border rounded">
+    </div>
+    <button onclick="addPatient()" class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">Tambah Pasien</button>
+
+    <h2 class="text-xl font-semibold mt-6 mb-2">Daftar Pasien</h2>
+    <table class="w-full border-collapse border border-gray-300">
+      <thead>
+        <tr class="bg-gray-200">
+          <th class="border p-2">Nama</th>
+          <th class="border p-2">NIK</th>
+          <th class="border p-2">Tanggal Lahir</th>
+          <th class="border p-2">JK</th>
+          <th class="border p-2">Alamat</th>
+          <th class="border p-2">No HP</th>
+          <th class="border p-2">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="patientList">
+        <!-- Data pasien muncul disini -->
+      </tbody>
+    </table>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
